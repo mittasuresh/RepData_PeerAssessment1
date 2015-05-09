@@ -1,25 +1,111 @@
 ---
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
+title: "Assignment 1 for Reproducible Research"
+author: "Mitta Suresh"
+date: "Friday, May 08, 2015"
+output: html_document
 ---
+Refer to the Assignment (https://github.com/rdpeng/RepData_PeerAssessment1) fro details of this project.
+The data is downloaded, unzipped and saved tot he working directory. THe septs follow
 
 
-## Loading and preprocessing the data
+```{r echo=FALSE}
+#opts_chunk$set(echo=TRUE)
+```
 
+## Loading and processing the data
 
+```{r mean total number of steps}
+# read the data from activity.csv file int he working directory
+df1=read.csv(file="activity.csv")
+str(df1)
+```
 
 ## What is mean total number of steps taken per day?
 
+```{r}
+stepsInaDay=tapply(df1$steps,df1$date,sum, na.rm=TRUE)
+hist(stepsInaDay,col="red", main="Histogram of Steps in a Day",xlab="Number of Steps")
+meanStepsPerDay= round(mean(stepsInaDay, na.rm=TRUE),0)
+medianStepsPerDay= median(stepsInaDay, na.rm=TRUE)
+```
 
+The mean total number of steps taken per day is `r meanStepsPerDay`.   
+The median of total number of steps taken per day is `r medianStepsPerDay`.
 
 ## What is the average daily activity pattern?
 
+```{r average daily activity}
+# gather data averaged per time segment, use tapply this time categorized by interval
+# also included na.rm=TRUe, otherwise we will get NA for mean
+y=tapply(df1$steps,df1$interval,mean,na.rm=TRUE)
+plot(names(y),y,type="l",main="Average Steps per Interval",xlab="Interval (5 minutes)", ylab="Average number of Steps",col="blue")
+#Find the max where the max value occurs
+ymax=which(y==max(y))
+# ymax is an array with element number, interval interval value is the title int he array, which can be extracted with names function
+z=names(ymax)
+```
 
+The averaged 5 minute interval with maximum number of steps is: `r z`
 
-## Imputing missing values
+## Inputing Missing Values  
 
+In this section we will replace the NA's with a meaningful value. I choose to replace NAs with random poisson variable with lambda=mean, mean is calculated for the whole data.
 
+```{r inputing missing values}
+numberOfNAs= sum(is.na(df1$steps))
+mean_steps=mean(df1$steps,na.rm=TRUE)
+df_new=df1
+# created a new data frame by coping old one. Using for loop identifying eal value with NA and replacing it with a random Poisson value
+for (i in 1:nrow(df1)) {
+                if (is.na (df_new[i,1])) {
+                        df_new[i,1]=round(rpois(1,mean_steps),0)
+                        }
+                }
 
-## Are there differences in activity patterns between weekdays and weekends?
+#adding all steps and categorizing by day, plot a histogram of that data and calculate mean and median
+stepsInaDay_new=tapply(df_new$steps,df1$date,sum)
+hist(stepsInaDay_new,col="orange", main="Histogram of Steps in a Day (corrected for NA's)",xlab="Number of Steps")
+meanStepsPerDay_new= round(mean(stepsInaDay_new),0)
+medianStepsPerDay_new= median(stepsInaDay_new)               
+```
+
+Total Number of Rows with NAs are: `r numberOfNAs`  
+The mean total number of steps taken per day corrected for NAs is `r meanStepsPerDay_new`.     
+The median of total number of steps taken per day corrected for NAs is `r medianStepsPerDay_new`.  
+
+Correcting for NAs, changes mean by `r meanStepsPerDay_new-meanStepsPerDay`.  
+Correcting for NAs, changes median by `r medianStepsPerDay_new-medianStepsPerDay`.  
+
+Since NAs are replaced with positive number, the total daily steps will increase compared to earlier calculations when NAs were ignored. That is clear from the two histograms below.
+
+```{r}
+par(mfrow=c(1,2))
+hist(stepsInaDay,col="red", main="Steps in a Day",xlab="Number of Steps")
+hist(stepsInaDay_new,col="orange", main="Steps in a Day (corrected)",xlab="Number of Steps")
+```
+
+## Differences in activity patterns between weekdays and weekends  
+
+Add a new column to categorize the data into weekday and weekend. For this the date column has to converted to proper class. Then use the weekday function to extact the day, and classify it as week day or week end
+
+```{r weekday, fig.height=10}
+library(lubridate)
+df_new$date=ymd(df_new$date)
+df_new$day=factor(c("weekday","weekend"))
+for (i in 1:nrow(df_new)) {
+        if (wday(df_new[i,2])==1 | wday(df_new[i,2])==7) {
+        df_new$day[i]="weekend"
+        } else {df_new$day[i]="weekday"}
+        }
+str(df_new)
+weekday=subset(df_new,day=="weekday")
+weekend=subset(df_new,day=="weekend")
+y_weekday=tapply(weekday$steps,weekday$interval,mean)
+y_weekend=tapply(weekend$steps,weekend$interval,mean)
+par(mar=c(4,4,2,2))
+par(mfrow=c(2,1))
+plot(names(y_weekday),y_weekday,type="l",main="Average Steps per Interval on Weekdays",xlab="Interval", ylab="Number of Steps",col="maroon")
+plot(names(y_weekend),y_weekend,type="l",main="Average Steps per Interval on Weekend days",xlab="Interval", ylab="Number of Steps",col="orange")
+par(mfrow=c(1,1))
+
+```
