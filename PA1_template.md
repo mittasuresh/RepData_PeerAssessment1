@@ -87,7 +87,7 @@ for (i in 1:nrow(df1)) {
                 }
 
 #adding all steps and categorizing by day, plot a histogram of that data and calculate mean and median
-stepsInaDay_new=tapply(df_new$steps,df1$date,sum)
+stepsInaDay_new=tapply(df_new$steps,df_new$date,sum)
 hist(stepsInaDay_new,col="orange", main="Histogram of Steps in a Day (corrected for NA's)",xlab="Number of Steps")
 ```
 
@@ -99,13 +99,15 @@ medianStepsPerDay_new= median(stepsInaDay_new)
 ```
 
 Total Number of Rows with NAs are: 2304  
-The mean total number of steps taken per day corrected for NAs is 1.076 &times; 10<sup>4</sup>.     
-The median of total number of steps taken per day corrected for NAs is 1.0732 &times; 10<sup>4</sup>.  
+The mean total number of steps taken per day corrected for NAs is 1.0773 &times; 10<sup>4</sup>.     
+The median of total number of steps taken per day corrected for NAs is 1.0799 &times; 10<sup>4</sup>.  
 
-Correcting for NAs, changes mean by 1406.  
-Correcting for NAs, changes median by 337.  
+Correcting for NAs, changes mean by 1419.  
+Correcting for NAs, changes median by 404.  
 
-Since NAs are replaced with positive number, the total daily steps will increase compared to earlier calculations when NAs were ignored. That is clear from the two histograms below. Note the range of frequency in the two plots.
+Since NAs are replaced with positive number, the total daily steps will increase compared to earlier calculations when NAs were ignored. That is clear from the two histograms below. Note the range of frequency in the two plots.   
+
+Also note that the first bar of the Histogram (0 to 5000) is higher in first graph, compared to the second one. The obvious question how could the bar be lower in the second plot if we just added values for NAs. It turned out the first bar included 0s the answer returned by tapply function, when the NAs are replaced with meaningful values the all the elements with 0 values were assigned higher values, resulting in lower frequenct on 0 to 5000 bar.
 
 
 ```r
@@ -133,7 +135,7 @@ str(df_new)
 
 ```
 ## 'data.frame':	17568 obs. of  4 variables:
-##  $ steps   : num  42 39 31 34 33 28 48 41 32 38 ...
+##  $ steps   : num  40 47 39 43 26 39 33 35 48 37 ...
 ##  $ date    : POSIXct, format: "2012-10-01" "2012-10-01" ...
 ##  $ interval: int  0 5 10 15 20 25 30 35 40 45 ...
 ##  $ day     : Factor w/ 2 levels "weekday","weekend": 1 1 1 1 1 1 1 1 1 1 ...

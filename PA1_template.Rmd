@@ -65,7 +65,7 @@ for (i in 1:nrow(df1)) {
                 }
 
 #adding all steps and categorizing by day, plot a histogram of that data and calculate mean and median
-stepsInaDay_new=tapply(df_new$steps,df1$date,sum)
+stepsInaDay_new=tapply(df_new$steps,df_new$date,sum)
 hist(stepsInaDay_new,col="orange", main="Histogram of Steps in a Day (corrected for NA's)",xlab="Number of Steps")
 meanStepsPerDay_new= round(mean(stepsInaDay_new),0)
 medianStepsPerDay_new= median(stepsInaDay_new)               
@@ -78,7 +78,9 @@ The median of total number of steps taken per day corrected for NAs is `r median
 Correcting for NAs, changes mean by `r meanStepsPerDay_new-meanStepsPerDay`.  
 Correcting for NAs, changes median by `r medianStepsPerDay_new-medianStepsPerDay`.  
 
-Since NAs are replaced with positive number, the total daily steps will increase compared to earlier calculations when NAs were ignored. That is clear from the two histograms below. Note the range of frequency in the two plots.
+Since NAs are replaced with positive number, the total daily steps will increase compared to earlier calculations when NAs were ignored. That is clear from the two histograms below. Note the range of frequency in the two plots.   
+
+Also note that the first bar of the Histogram (0 to 5000) is higher in first graph, compared to the second one. The obvious question how could the bar be lower in the second plot if we just added values for NAs. It turned out the first bar included 0s the answer returned by tapply function, when the NAs are replaced with meaningful values the all the elements with 0 values were assigned higher values, resulting in lower frequenct on 0 to 5000 bar.
 
 ```{r}
 par(mfrow=c(1,2))
